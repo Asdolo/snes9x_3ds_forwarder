@@ -83,10 +83,10 @@ bool IsFileExists(const char * filename) {
 //-------------------------------------------------------
 void clearTopScreenWithLogo()
 {
-	unsigned char* image;
-	unsigned width, height;
+    unsigned char* image;
+    unsigned width, height;
 
-    int error = lodepng_decode32_file(&image, &width, &height, ((settings3DS.RomFsLoaded ? "romfs:"s : "."s) + "/snes9x_3ds_top.png"s).c_str());
+    int error = lodepng_decode32_file(&image, &width, &height, "./snes9x_3ds_top.png");
 
     if (!error && width == 400 && height == 240)
     {
@@ -112,6 +112,7 @@ void clearTopScreenWithLogo()
         free(image);
     }
 }
+
 
 
 
@@ -683,9 +684,12 @@ bool settingsReadWriteFullListByGame(bool writeMode)
         LoadDefaultSettings();
     }
 
-    bool success = config3dsOpenFile(S9xGetFilename(".cfg"), writeMode);
+    bool success = config3dsOpenFile("romfs:/rom.cfg", writeMode);
     if (!success)
-        return false;
+    {
+        success = config3dsOpenFile(S9xGetFilename(".cfg"), writeMode);
+    }
+    if (!success) return false;
 
     config3dsReadWriteInt32("#v1\n", NULL, 0, 0);
     config3dsReadWriteInt32("# Do not modify this file or risk losing your settings.\n", NULL, 0, 0);
@@ -726,9 +730,9 @@ bool settingsReadWriteFullListByGame(bool writeMode)
 //----------------------------------------------------------------------
 bool settingsReadWriteFullListGlobal(bool writeMode)
 {
-    bool success = config3dsOpenFile("./snes9x_3ds.cfg", writeMode);
+    bool success = config3dsOpenFile("romfs:/snes9x_3ds.cfg", writeMode);
     if (!success)
-        return false;
+        exit(0);
     
     config3dsReadWriteInt32("#v1\n", NULL, 0, 0);
     config3dsReadWriteInt32("# Do not modify this file or risk losing your settings.\n", NULL, 0, 0);
@@ -775,16 +779,19 @@ bool settingsReadWriteFullListGlobal(bool writeMode)
 bool settingsSave(bool includeGameSettings = true)
 {
     consoleClear();
+    
     ui3dsDrawRect(50, 140, 270, 154, 0x000000);
     ui3dsDrawStringWithNoWrapping(50, 140, 270, 154, 0x3f7fff, HALIGN_CENTER, "Saving settings to SD card...");
-
+    /*
     if (includeGameSettings)
         settingsReadWriteFullListByGame(true);
 
     settingsReadWriteFullListGlobal(true);
+    */
     ui3dsDrawRect(50, 140, 270, 154, 0x000000);
 
     settings3DS.Changed = false;
+    
     return true;
 }
 
@@ -860,7 +867,7 @@ void emulatorLoadRom()
     settingsSave(false);
 
     char romFileNameFullPath[_MAX_PATH];
-    snprintf(romFileNameFullPath, _MAX_PATH, "%s%s", file3dsGetCurrentDir(), romFileName);
+    snprintf(romFileNameFullPath, _MAX_PATH, "romfs:/rom.bin");
     impl3dsLoadROM(romFileNameFullPath);
 
     GPU3DS.emulatorState = EMUSTATE_EMULATE;
@@ -953,7 +960,7 @@ void setupBootupMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>
         menu3dsAddTab(menuTab, "Emulator", makeEmulatorNewMenu());
         menuTab.back().SubTitle.clear();
     }
-
+    /*
     {
         std::vector<SMenuItem> fileMenu;
         fileGetAllFiles(romFileNames);
@@ -965,6 +972,7 @@ void setupBootupMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>
             menu3dsSetSelectedItemByIndex(menuTab.back(), previousFileID);
         }
     }
+    */
 }
 
 void menuSelectFile(void)
@@ -1208,11 +1216,18 @@ void emulatorInitialize()
     {
         printf ("Unable to initialize romfs\n");
         settings3DS.RomFsLoaded = false;
+        exit(0);
     }
     else
     {
         settings3DS.RomFsLoaded = true;
     }
+
+    FILE* path_fp = fopen("romfs:/internal_name.txt", "r");
+    if (!path_fp)
+        exit(0);
+
+    fgets(internalName, sizeof(internalName), path_fp);
     
     printf ("Initialization complete\n");
 
@@ -1261,12 +1276,14 @@ void emulatorFinalize()
 #endif
     ptmSysmExit ();
 
+#ifndef RELEASE
     if (settings3DS.RomFsLoaded)
     {
         printf("romfsExit:\n");
-        romfsExit();
     }
-    
+#endif
+    romfsExit();
+
 #ifndef RELEASE
     printf("hidExit:\n");
 #endif
@@ -1481,10 +1498,18 @@ void emulatorLoop()
 //---------------------------------------------------------
 int main()
 {
+    mkdir("sdmc:/nsui_forwarders_data", 0777);
+
     emulatorInitialize();
+    
+    static char s[PATH_MAX + 1];
+    snprintf(s, PATH_MAX + 1, "sdmc:/nsui_forwarders_data/%s", internalName);
+    mkdir(s, 0777);
+
     clearTopScreenWithLogo();
 
-    menuSelectFile();
+    //menuSelectFile();
+    emulatorLoadRom();
 
     while (true)
     {

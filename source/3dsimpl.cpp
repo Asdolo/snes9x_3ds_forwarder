@@ -94,6 +94,7 @@ SGPUTexture *snesDepthForOtherTextures;
 //
 extern S9xSettings3DS settings3DS;
 
+char internalName[MAX_LENGHT_INTERNAL_NAME + 1];
 
 //---------------------------------------------------------
 // Initializes the emulator core.
@@ -363,6 +364,8 @@ void impl3dsOutputSoundSamples(short *leftSamples, short *rightSamples)
 void impl3dsLoadROM(char *romFilePath)
 {
     bool loaded = Memory.LoadROM(romFilePath);
+    if (!loaded) exit(0);
+
     Memory.LoadSRAM (S9xGetFilename (".srm"));
 
     gpu3dsInitializeMode7Vertexes();
@@ -768,10 +771,8 @@ void S9xLoadSDD1Data ()
 const char * S9xGetFilename (const char *ex)
 {
 	static char	s[PATH_MAX + 1];
-	char		drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], fname[_MAX_FNAME + 1], ext[_MAX_EXT + 1];
 
-	_splitpath(Memory.ROMFilename, drive, dir, fname, ext);
-	snprintf(s, PATH_MAX + 1, "%s/%s%s", dir, fname, ex);
+	snprintf(s, PATH_MAX + 1, "sdmc:/nsui_forwarders_data/%s/rom%s", internalName, ex);
 
 	return (s);
 }
@@ -779,16 +780,13 @@ const char * S9xGetFilename (const char *ex)
 const char * S9xGetFilenameInc (const char *ex)
 {
 	static char	s[PATH_MAX + 1];
-	char		drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], fname[_MAX_FNAME + 1], ext[_MAX_EXT + 1];
-
+	
 	unsigned int	i = 0;
 	const char		*d;
 	struct stat		buf;
 
-	_splitpath(Memory.ROMFilename, drive, dir, fname, ext);
-
 	do
-		snprintf(s, PATH_MAX + 1, "%s/%s.%03d%s", dir, fname, i++, ex);
+		snprintf(s, PATH_MAX + 1, "sdmc:/nsui_forwarders_data/%s/rom.%03d%s", internalName, i++, ex);
 	while (stat(s, &buf) == 0 && i < 1000);
 
 	return (s);

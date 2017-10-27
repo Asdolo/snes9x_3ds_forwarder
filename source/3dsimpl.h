@@ -13,6 +13,8 @@
 #define BTN3DS_SELECT   6
 #define BTN3DS_START    7
 
+#define MAX_LENGHT_INTERNAL_NAME  50
+
 //---------------------------------------------------------
 // 3DS textures
 //---------------------------------------------------------
@@ -27,6 +29,7 @@ extern SGPUTexture *snesMode7Tile0Texture;
 extern SGPUTexture *snesDepthForScreens;
 extern SGPUTexture *snesDepthForOtherTextures;
 
+extern char internalName[MAX_LENGHT_INTERNAL_NAME + 1];
 
 //---------------------------------------------------------
 // Initializes the emulator core.
