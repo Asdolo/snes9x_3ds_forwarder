@@ -7,7 +7,7 @@ $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>dev
 endif
 
 TOPDIR ?= $(CURDIR)
-include $(DEVKITARM)/3ds_rules
+include C:\workspace\forwarders\devkitPro_1.0\devkitARM\3ds_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -64,7 +64,7 @@ LIBS	:= -lcitro3d -lctru -lm
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(CTRULIB)
+LIBDIRS	:= C:\workspace\forwarders\devkitPro_1.0\ctrulib\
 
 
 #---------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ all: $(BUILD) cia
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@C:\devkitPro\msys\bin\make.exe --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 cia: $(BUILD)
@@ -207,7 +207,7 @@ endif
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
+	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET).cia
 
 
 #---------------------------------------------------------------------------------
