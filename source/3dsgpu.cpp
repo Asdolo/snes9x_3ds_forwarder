@@ -509,7 +509,7 @@ bool gpu3dsInitialize()
     gfxInit	(GPU3DS.screenFormat, GPU3DS.screenFormat, false);
 	GPU_Init(NULL);
 
-	gfxSet3D(true);
+	gfxSet3D(false);
 
     gfxOldTopRightFramebuffers[0] = gfxTopRightFramebuffers[0];
     gfxOldTopRightFramebuffers[1] = gfxTopRightFramebuffers[1];
@@ -536,7 +536,7 @@ bool gpu3dsInitialize()
 
     // Initialize the bottom screen for console output.
     //
-    consoleInit(GFX_BOTTOM, NULL);
+    //consoleInit(GFX_BOTTOM, NULL);
 
     // Create the command buffers
     //

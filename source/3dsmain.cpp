@@ -113,6 +113,48 @@ void clearTopScreenWithLogo()
     }
 }
 
+void renderBottomScreenImage()
+{
+    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGBA8_OES);
+    gfxSetDoubleBuffering(GFX_BOTTOM, false);
+    gfxSwapBuffersGpu();
+
+    unsigned char* image;
+    unsigned width, height;
+
+    int error = lodepng_decode32_file(&image, &width, &height, "romfs:/bottom.png");
+
+    if (!error && width == 320 && height == 240)
+    {
+        // lodepng outputs big endian rgba so we need to convert
+        for (int i = 0; i < 2; i++)
+        {
+            u8* src = image;
+            uint32* fb = (uint32 *) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+            for (int y = 0; y < 240; y++)
+                for (int x = 0; x < 320; x++)
+                {
+                    uint32 r = *src++;
+                    uint32 g = *src++;
+                    uint32 b = *src++;
+                    uint32 a = *src++;
+
+                    uint32 c = ((r << 24) | (g << 16) | (b << 8) | 0xff);
+                    fb[x * 240 + (239 - y)] = c;
+                }
+            gfxSwapBuffers();
+        }
+
+        free(image);
+    }
+
+    /*
+    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
+    gfxSetDoubleBuffering(GFX_BOTTOM, false);
+    gfxSwapBuffersGpu();
+    */
+}
+
 
 
 
@@ -780,15 +822,15 @@ bool settingsSave(bool includeGameSettings = true)
 {
     consoleClear();
     
-    ui3dsDrawRect(50, 140, 270, 154, 0x000000);
-    ui3dsDrawStringWithNoWrapping(50, 140, 270, 154, 0x3f7fff, HALIGN_CENTER, "Saving settings to SD card...");
+    //ui3dsDrawRect(50, 140, 270, 154, 0x000000);
+    //ui3dsDrawStringWithNoWrapping(50, 140, 270, 154, 0x3f7fff, HALIGN_CENTER, "Saving settings to SD card...");
     /*
     if (includeGameSettings)
         settingsReadWriteFullListByGame(true);
 
     settingsReadWriteFullListGlobal(true);
     */
-    ui3dsDrawRect(50, 140, 270, 154, 0x000000);
+    //ui3dsDrawRect(50, 140, 270, 154, 0x000000);
 
     settings3DS.Changed = false;
     
@@ -861,9 +903,9 @@ extern SCheatData Cheat;
 
 void emulatorLoadRom()
 {
-    consoleInit(GFX_BOTTOM, NULL);
+    //consoleInit(GFX_BOTTOM, NULL);
     gfxSetDoubleBuffering(GFX_BOTTOM, false);
-    consoleClear();
+    //consoleClear();
     settingsSave(false);
 
     char romFileNameFullPath[_MAX_PATH];
@@ -1021,7 +1063,7 @@ void setupPauseMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>&
     menuTab.reserve(4);
 
     {
-        menu3dsAddTab(menuTab, "Emulator", makeEmulatorMenu(menuTab, currentMenuTab, closeMenu));
+        menu3dsAddTab(menuTab, "Game", makeEmulatorMenu(menuTab, currentMenuTab, closeMenu));
         menuTab.back().SubTitle.clear();
     }
 
@@ -1039,7 +1081,7 @@ void setupPauseMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>&
         menu3dsAddTab(menuTab, "Cheats", makeCheatMenu());
         menuTab.back().SubTitle.clear();
     }
-
+    /*
     {
         std::vector<SMenuItem> fileMenu;
         fileGetAllFiles(romFileNames);
@@ -1051,6 +1093,7 @@ void setupPauseMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>&
             menu3dsSetSelectedItemByIndex(menuTab.back(), previousFileID);
         }
     }
+    */
 }
 
 void menuPause()
@@ -1322,9 +1365,9 @@ void updateFrameCount()
         int fpsmul10 = (int)((float)600 / timeDelta);
 
 #if !defined(RELEASE) && !defined(DEBUG_CPU) && !defined(DEBUG_APU)
-        consoleClear();
+        //consoleClear();
 #endif
-
+        /*
         if (settings3DS.HideUnnecessaryBottomScrText == 0)
         {
             if (framesSkippedCount)
@@ -1335,6 +1378,7 @@ void updateFrameCount()
             ui3dsDrawRect(2, 2, 200, 16, 0x000000);
             ui3dsDrawStringWithNoWrapping(2, 2, 200, 16, 0x7f7f7f, HALIGN_LEFT, frameCountBuffer);
         }
+        */
 
         frameCount60 = 60;
         framesSkippedCount = 0;
@@ -1390,13 +1434,16 @@ void emulatorLoop()
     bool skipDrawingFrame = false;
 
     // Reinitialize the console.
-    consoleInit(GFX_BOTTOM, NULL);
+    renderBottomScreenImage();
+    //consoleInit(GFX_BOTTOM, NULL);
     gfxSetDoubleBuffering(GFX_BOTTOM, false);
-    menu3dsDrawBlackScreen();
+    //menu3dsDrawBlackScreen();
+    /*
     if (settings3DS.HideUnnecessaryBottomScrText == 0)
     {
         ui3dsDrawStringWithNoWrapping(0, 100, 320, 115, 0x7f7f7f, HALIGN_CENTER, "Touch screen for menu");
     }
+    */
 
     snd3dsStartPlaying();
 
@@ -1506,7 +1553,8 @@ int main()
     snprintf(s, PATH_MAX + 1, "sdmc:/nsui_forwarders_data/%s", internalName);
     mkdir(s, 0777);
 
-    clearTopScreenWithLogo();
+    //clearTopScreenWithLogo();
+    renderBottomScreenImage();
 
     //menuSelectFile();
     emulatorLoadRom();
