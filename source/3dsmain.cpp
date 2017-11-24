@@ -59,6 +59,8 @@ int framesSkippedCount = 0;
 char romFileName[_MAX_PATH];
 char romFileNameLastSelected[_MAX_PATH];
 
+u8* bottom_screen_buffer;
+off_t bottom_screen_buffer_size;
 
 void LoadDefaultSettings() {
     settings3DS.PaletteFix = 0;
@@ -115,6 +117,7 @@ void clearTopScreenWithLogo()
 
 void renderBottomScreenImage()
 {
+    /*
     gfxSetScreenFormat(GFX_BOTTOM, GSP_RGBA8_OES);
     gfxSetDoubleBuffering(GFX_BOTTOM, false);
     gfxSwapBuffersGpu();
@@ -147,12 +150,40 @@ void renderBottomScreenImage()
 
         free(image);
     }
-
-    /*
-    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
-    gfxSetDoubleBuffering(GFX_BOTTOM, false);
-    gfxSwapBuffersGpu();
     */
+    FILE *file = fopen("romfs:/bottom.bin", "rb");
+
+    if (file)
+    {
+        gfxSetScreenFormat(GFX_BOTTOM, GSP_BGR8_OES);
+        gfxSetDoubleBuffering(GFX_BOTTOM, false);
+        gfxSwapBuffersGpu();
+    
+        // seek to end of file
+        fseek(file, 0, SEEK_END);
+        // file pointer tells us the size
+        bottom_screen_buffer_size = ftell(file);
+        // seek back to start
+        fseek(file, 0, SEEK_SET);
+        //allocate a buffer
+        bottom_screen_buffer = (u8*)(malloc(bottom_screen_buffer_size));
+        //read contents !
+        off_t bytesRead = fread(bottom_screen_buffer, 1, bottom_screen_buffer_size,file);
+        //close the file because we like being nice and tidy
+        fclose(file);
+
+        //We don't need double buffering in this example. In this way we can draw our image only once on screen.
+        gfxSetDoubleBuffering(GFX_BOTTOM, false);
+        u8* fb = gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
+        memcpy(fb, bottom_screen_buffer, bottom_screen_buffer_size);
+
+        gfxFlushBuffers();
+        gfxSwapBuffers();  
+    }
+    else
+    {  
+        GSPLCD_PowerOffBacklight(2);
+    }
 }
 
 
@@ -1293,6 +1324,8 @@ void emulatorInitialize()
 //--------------------------------------------------------
 void emulatorFinalize()
 {
+    free(bottom_screen_buffer);
+
     consoleClear();
 
     impl3dsFinalize();
