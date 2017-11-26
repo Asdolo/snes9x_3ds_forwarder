@@ -873,8 +873,8 @@ void S9xSyncSpeed (void)
 }
 
 uint32 prevConsoleJoyPad = 0;
-u32 prevConsoleButtonPressed[6];
-u32 buttons3dsPressed[6];
+u32 prevConsoleButtonPressed[10];
+u32 buttons3dsPressed[10];
 
 uint32 S9xReadJoypad (int which1_0_to_4)
 {
@@ -889,50 +889,90 @@ uint32 S9xReadJoypad (int which1_0_to_4)
     if (keysHeld3ds & KEY_LEFT) consoleJoyPad |= SNES_LEFT_MASK;
     if (keysHeld3ds & KEY_RIGHT) consoleJoyPad |= SNES_RIGHT_MASK;
 
-	#define SET_CONSOLE_JOYPAD(i, mask) 							\
+	#define SET_CONSOLE_JOYPAD(i, mask, buttonMapping) 				\
 		buttons3dsPressed[i] = (keysHeld3ds & mask);				\
 		if (keysHeld3ds & mask) 									\
 			consoleJoyPad |= 										\
-				settings3DS.ButtonMapping[i][0] |					\
-				settings3DS.ButtonMapping[i][1] |					\
-				settings3DS.ButtonMapping[i][2] |					\
-				settings3DS.ButtonMapping[i][3];					\
+				buttonMapping[i][0] |								\
+				buttonMapping[i][1] |								\
+				buttonMapping[i][2] |								\
+				buttonMapping[i][3];								\
 
-	SET_CONSOLE_JOYPAD(BTN3DS_L, KEY_L)
-	SET_CONSOLE_JOYPAD(BTN3DS_R, KEY_R)
-	SET_CONSOLE_JOYPAD(BTN3DS_A, KEY_A)
-	SET_CONSOLE_JOYPAD(BTN3DS_B, KEY_B)
-	SET_CONSOLE_JOYPAD(BTN3DS_X, KEY_X)
-	SET_CONSOLE_JOYPAD(BTN3DS_Y, KEY_Y)
-    SET_CONSOLE_JOYPAD(BTN3DS_SELECT, KEY_SELECT);
-    SET_CONSOLE_JOYPAD(BTN3DS_START, KEY_START);
+	if (settings3DS.UseGlobalButtonMappings)
+	{
+		SET_CONSOLE_JOYPAD(BTN3DS_L, KEY_L, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_R, KEY_R, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_A, KEY_A, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_B, KEY_B, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_X, KEY_X, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_Y, KEY_Y, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_SELECT, KEY_SELECT, settings3DS.GlobalButtonMapping);
+		SET_CONSOLE_JOYPAD(BTN3DS_START, KEY_START, settings3DS.GlobalButtonMapping);
+		SET_CONSOLE_JOYPAD(BTN3DS_ZL, KEY_ZL, settings3DS.GlobalButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_ZR, KEY_ZR, settings3DS.GlobalButtonMapping)
+	}
+	else
+	{
+		SET_CONSOLE_JOYPAD(BTN3DS_L, KEY_L, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_R, KEY_R, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_A, KEY_A, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_B, KEY_B, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_X, KEY_X, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_Y, KEY_Y, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_SELECT, KEY_SELECT, settings3DS.ButtonMapping);
+		SET_CONSOLE_JOYPAD(BTN3DS_START, KEY_START, settings3DS.ButtonMapping);
+		SET_CONSOLE_JOYPAD(BTN3DS_ZL, KEY_ZL, settings3DS.ButtonMapping)
+		SET_CONSOLE_JOYPAD(BTN3DS_ZR, KEY_ZR, settings3DS.ButtonMapping)
+	}
+
 
     // Handle turbo / rapid fire buttons.
     //
-    #define HANDLE_TURBO(i) 										\
+    int *turbo = settings3DS.Turbo;
+    if (settings3DS.UseGlobalTurbo)
+        turbo = settings3DS.GlobalTurbo;
+    
+    #define HANDLE_TURBO(i, buttonMapping) 										\
 		if (settings3DS.Turbo[i] && buttons3dsPressed[i]) { 		\
 			if (!prevConsoleButtonPressed[i]) 						\
 			{ 														\
-				prevConsoleButtonPressed[i] = 11 - settings3DS.Turbo[i]; \
+				prevConsoleButtonPressed[i] = 11 - turbo[i]; 		\
 			} 														\
 			else 													\
 			{ 														\
 				prevConsoleButtonPressed[i]--; 						\
 				consoleJoyPad &= ~(									\
-				settings3DS.ButtonMapping[i][0] |					\
-				settings3DS.ButtonMapping[i][1] |					\
-				settings3DS.ButtonMapping[i][2] |					\
-				settings3DS.ButtonMapping[i][3]						\
+				buttonMapping[i][0] |								\
+				buttonMapping[i][1] |								\
+				buttonMapping[i][2] |								\
+				buttonMapping[i][3]									\
 				); \
 			} \
 		} \
 
-    HANDLE_TURBO(BTN3DS_L);
-    HANDLE_TURBO(BTN3DS_R);
-    HANDLE_TURBO(BTN3DS_A);
-    HANDLE_TURBO(BTN3DS_B);
-    HANDLE_TURBO(BTN3DS_X);
-    HANDLE_TURBO(BTN3DS_Y);
+
+	if (settings3DS.UseGlobalButtonMappings)
+	{
+		HANDLE_TURBO(BTN3DS_A, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_B, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_X, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_Y, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_L, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_R, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_ZL, settings3DS.GlobalButtonMapping);
+		HANDLE_TURBO(BTN3DS_ZR, settings3DS.GlobalButtonMapping);
+	}
+	else
+	{
+		HANDLE_TURBO(BTN3DS_A, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_B, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_X, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_Y, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_L, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_R, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_ZL, settings3DS.ButtonMapping);
+		HANDLE_TURBO(BTN3DS_ZR, settings3DS.ButtonMapping);
+	}
 
     prevConsoleJoyPad = consoleJoyPad;
 

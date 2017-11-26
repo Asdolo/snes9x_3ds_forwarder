@@ -1,3 +1,4 @@
+#include <array>
 
 enum class EmulatedFramerate {
     UseRomRegion = 0,
@@ -5,6 +6,39 @@ enum class EmulatedFramerate {
     ForceFps60 = 2,
     Match3DS = 3,
     Count = 4
+};
+
+template <int Count>
+struct ButtonMapping {
+    std::array<uint32, Count> MappingBitmasks;
+
+    bool IsHeld(uint32 held3dsButtons) const {
+        for (uint32 mapping : MappingBitmasks) {
+            if (mapping != 0 && (mapping & held3dsButtons) == mapping) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void SetSingleMapping(uint32 mapping) {
+        SetDoubleMapping(mapping, 0);
+    }
+
+    void SetDoubleMapping(uint32 mapping0, uint32 mapping1) {
+        if (Count > 0) {
+            MappingBitmasks[0] = mapping0;
+        }
+        if (Count > 1) {
+            MappingBitmasks[1] = mapping1;
+        }
+        if (Count > 2) {
+            for (size_t i = 2; i < MappingBitmasks.size(); ++i) {
+                MappingBitmasks[i] = 0;
+            }
+        }
+    }
 };
 
 typedef struct
@@ -27,7 +61,7 @@ typedef struct
     int     StretchWidth, StretchHeight;
     int     CropPixels;
 
-    int     Turbo[6] = {0, 0, 0, 0, 0, 0};  // Turbo buttons: 0 - No turbo, 1 - Release/Press every alt frame.
+    int     Turbo[8] = {0, 0, 0, 0, 0, 0, 0, 0};  // Turbo buttons: 0 - No turbo, 1 - Release/Press every alt frame.
                                             // Indexes: 0 - A, 1 - B, 2 - X, 3 - Y, 4 - L, 5 - R
 
     int     Volume = 4;                     // 0: 100% Default volume,
@@ -61,8 +95,16 @@ typedef struct
     // to the console buttons. This is for consistency with the
     // other EMUS for 3DS.
     //
-    int     GlobalButtonMapping[8][4] = {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};  
-    int     ButtonMapping[8][4] = {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};  
+    int     GlobalButtonMapping[10][4] = {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};  
+    int     ButtonMapping[10][4] = {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};  
+
+    ::ButtonMapping<1> ButtonHotkeyOpenMenu; // Stores button that can be held to open the menu.
+
+    ::ButtonMapping<1> ButtonHotkeyDisableFramelimit; // Stores button that can be held to disable the frame limit.
+
+    ::ButtonMapping<1> GlobalButtonHotkeyOpenMenu; // Stores button that can be held to open the menu.
+
+    ::ButtonMapping<1> GlobalButtonHotkeyDisableFramelimit; // Stores button that can be held to disable the frame limit.
 
     bool    Changed = false;                // Stores whether the configuration has been changed and should be written.
 
@@ -75,9 +117,11 @@ typedef struct
     int     UseGlobalVolume = 0;            // Use global button mappings for all games
                                             // 0 - no, 1 - yes
 
-    int     GlobalTurbo[6] = {0, 0, 0, 0, 0, 0};  
+    int     UseGlobalEmuControlKeys = 0;    // Use global emulator control keys for all games
+
+    int     GlobalTurbo[8] = {0, 0, 0, 0, 0, 0, 0, 0};  
                                             // Turbo buttons: 0 - No turbo, 1 - Release/Press every alt frame.
-                                            // Indexes for 3DS buttons: 0 - A, 1 - B, 2 - X, 3 - Y, 4 - L, 5 - R
+                                            // Indexes for 3DS buttons: 0 - A, 1 - B, 2 - X, 3 - Y, 4 - L, 5 - R, 6 - ZL, 7 - ZR
 
     int     GlobalVolume = 4;               // 0: 100%, 4: 200%, 8: 400%
 

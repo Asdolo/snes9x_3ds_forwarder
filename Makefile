@@ -28,7 +28,7 @@ include C:\workspace\forwarders\devkitPro_1.0\devkitARM\3ds_rules
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
 APP_TITLE	:=	SNES9x for 3DS
-APP_DESCRIPTION	:=	High compatibility SNES emulator for 3DS. Based on SNES9x 1.43.
+APP_DESCRIPTION	:=	SNES emulator for 3DS.
 APP_AUTHOR	:=	bubble2k16
 ASSETS		:=	assets
 ICON		:=	$(ASSETS)/icon.png
@@ -38,7 +38,7 @@ BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
-ROMFS		:=	romfs
+#ROMFS		:=	romfs
 
 #---------------------------------------------------------------------------------
 # options for code generation
