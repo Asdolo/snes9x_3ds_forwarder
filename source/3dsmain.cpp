@@ -1188,15 +1188,15 @@ void setupPauseMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>&
         menuTab.back().SubTitle.clear();
     }
 
-    {
-        menu3dsAddTab(menuTab, "Options", makeOptionMenu());
-        menuTab.back().SubTitle.clear();
-    }
+    //{
+    //    menu3dsAddTab(menuTab, "Options", makeOptionMenu());
+    //    menuTab.back().SubTitle.clear();
+    //}
 
-    {
-        menu3dsAddTab(menuTab, "Controls", makeControlsMenu());
-        menuTab.back().SubTitle.clear();
-    }
+    //{
+    //    menu3dsAddTab(menuTab, "Controls", makeControlsMenu());
+    //    menuTab.back().SubTitle.clear();
+    //}
 
     {
         menu3dsAddTab(menuTab, "Cheats", makeCheatMenu());
@@ -1356,6 +1356,17 @@ void emulatorInitialize()
 
     romFileNameLastSelected[0] = 0;
 
+    if (romfsInit()!=0)
+    {
+        printf ("Unable to initialize romfs\n");
+        settings3DS.RomFsLoaded = false;
+        exit(0);
+    }
+    else
+    {
+        settings3DS.RomFsLoaded = true;
+    }
+
     if (!gpu3dsInitialize())
     {
         printf ("Unable to initialize GPU\n");
@@ -1377,17 +1388,6 @@ void emulatorInitialize()
     }
 
     ui3dsInitialize();
-
-    if (romfsInit()!=0)
-    {
-        printf ("Unable to initialize romfs\n");
-        settings3DS.RomFsLoaded = false;
-        exit(0);
-    }
-    else
-    {
-        settings3DS.RomFsLoaded = true;
-    }
 
     FILE* path_fp = fopen("romfs:/internal_name.txt", "r");
     if (!path_fp)
