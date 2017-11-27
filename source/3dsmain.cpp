@@ -829,10 +829,7 @@ bool settingsReadWriteFullListByGame(bool writeMode)
 
     bool success = config3dsOpenFile("romfs:/rom.cfg", writeMode);
     if (!success)
-    {
-        success = config3dsOpenFile(S9xGetFilename(".cfg"), writeMode);
-    }
-    if (!success) return false;
+        exit(0);
 
     config3dsReadWriteInt32("#v1\n", NULL, 0, 0);
     config3dsReadWriteInt32("# Do not modify this file or risk losing your settings.\n", NULL, 0, 0);
@@ -997,7 +994,7 @@ bool settingsLoad(bool includeGameSettings = true)
     settings3DS.Changed = false;
     bool success = settingsReadWriteFullListGlobal(false);
     if (!success)
-        return false;
+        exit(0);
     settingsUpdateAllSettings(false);
 
     if (includeGameSettings)
@@ -1009,44 +1006,9 @@ bool settingsLoad(bool includeGameSettings = true)
         settingsDefaultButtonMapping(settings3DS.ButtonMapping);
         settingsDefaultButtonMapping(settings3DS.GlobalButtonMapping);
 
-        if (success)
-        {
-            if (settingsUpdateAllSettings())
-                settingsSave();
-            return true;
-        }
-        else
-        {
-            // If we can't find the saved settings, always
-            // set the frame rate to be based on the ROM's region.
-            // For the rest of the settings, we use whatever has been
-            // set in the previous game.
-            //
-            settings3DS.MaxFrameSkips = 1;
-            settings3DS.ForceFrameRate = EmulatedFramerate::UseRomRegion;
-            settings3DS.Volume = 4;
-
-            for (int i = 0; i < 8; i++)     // and clear all turbo buttons.
-                settings3DS.Turbo[i] = 0;
-
-            if (SNESGameFixes.PaletteCommitLine == -2)
-                settings3DS.PaletteFix = 1;
-            else if (SNESGameFixes.PaletteCommitLine == 1)
-                settings3DS.PaletteFix = 2;
-            else if (SNESGameFixes.PaletteCommitLine == -1)
-                settings3DS.PaletteFix = 3;
-
-            if (Settings.AutoSaveDelay == 60)
-                settings3DS.SRAMSaveInterval = 1;
-            else if (Settings.AutoSaveDelay == 600)
-                settings3DS.SRAMSaveInterval = 2;
-            else if (Settings.AutoSaveDelay == 3600)
-                settings3DS.SRAMSaveInterval = 3;
-
-            settingsUpdateAllSettings();
-
-            return settingsSave();
-        }
+        if (!success)
+            exit(0);
+        settingsUpdateAllSettings();
     }
 }
 
@@ -1350,16 +1312,7 @@ char *noCheatsText[] {
     "    No cheats available for this game ",
     "",
     "    To enable cheats:  ",
-    "      Copy your .CHT/.CHX file into the same folder as  ",
-    "      ROM file and make sure it has the same name. ",
-    "",
-    "      If your ROM filename is: ",
-    "          MyGame.smc ",
-    "      Then your cheat filename must be: ",
-    "          MyGame.cht or MyGame.chx ",
-    "",
-    "    Refer to readme.md for the .CHX file format. ",
-    ""
+    "      Copy your .CHT/.CHX file to the path: "
      };
 
 void menuSetupCheats(std::vector<SMenuItem>& cheatMenu)
@@ -1373,10 +1326,21 @@ void menuSetupCheats(std::vector<SMenuItem>& cheatMenu)
     }
     else
     {
-        for (int i = 0; i < 14; i++)
+        for (int i = 0; i < 5; i++)
         {
             cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string(noCheatsText[i]), ""s);
         }
+        
+        static char message[PATH_MAX + 1];
+        snprintf(message, PATH_MAX + 1, "          %s/", internalName);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string("      sd:/"), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string("        nsui_forwarders_data/"), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string(message), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string("            rom.cht or rom.chx"), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string(""), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string("      (The file has to be named \"rom.cht\" or \"rom.chx\")"), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string(""), ""s);
+        cheatMenu.emplace_back(nullptr, MenuItemType::Disabled, std::string("    Refer to the NSUI thread for the .CHX file format. "), ""s);        
     }
 }
 
