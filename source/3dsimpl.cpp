@@ -524,7 +524,7 @@ void impl3dsRunOneFrame(bool firstFrame, bool skipDrawingFrame)
         400,
         240,
         settings3DS.CropPixels,
-        settings3DS.CropPixels ? settings3DS.CropPixels : 1,
+        settings3DS.CropPixels,
         400 - settings3DS.CropPixels,
         240 - settings3DS.CropPixels,
         0.1f);
@@ -536,7 +536,7 @@ void impl3dsRunOneFrame(bool firstFrame, bool skipDrawingFrame)
 	gpu3dsDisableStencilTest();
 
 	int sWidth = settings3DS.StretchWidth;
-	int sHeight = (settings3DS.StretchHeight == -1 ? PPU.ScreenHeight + 1 : settings3DS.StretchHeight);
+	int sHeight = (settings3DS.StretchHeight == -1 ? PPU.ScreenHeight - 1 : settings3DS.StretchHeight);
 	if (sWidth == 04030000)
 		sWidth = sHeight * 4 / 3;
 	else if (sWidth == 01010000)

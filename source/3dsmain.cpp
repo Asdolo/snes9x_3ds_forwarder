@@ -1181,7 +1181,7 @@ void menuSelectFile(void)
 //----------------------------------------------------------------------
 void setupPauseMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>& romFileNames, const DirectoryEntry*& selectedDirectoryEntry, bool selectPreviousFile, int& currentMenuTab, bool& closeMenu, bool refreshFileList) {
     menuTab.clear();
-    menuTab.reserve(4);
+    menuTab.reserve(2);
 
     {
         menu3dsAddTab(menuTab, "Game", makeEmulatorMenu(menuTab, currentMenuTab, closeMenu));
@@ -1234,7 +1234,7 @@ void menuPause()
 
     bool loadRomBeforeExit = false;
 
-    std::vector<SMenuItem>& cheatMenu = menuTab[3].MenuItems;
+    std::vector<SMenuItem>& cheatMenu = menuTab[1].MenuItems;
     menuCopyCheats(cheatMenu, false);
 
     bool animateMenu = true;

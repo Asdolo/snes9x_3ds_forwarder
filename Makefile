@@ -1,3 +1,7 @@
+DEVKITPRO := /c/workspace/forwarders/bubble2k16_forwarders/devkitPro
+DEVKITARM := $(DEVKITPRO)/devkitARM_r45
+CTRULIB := $(DEVKITPRO)/ctrulib
+
 #---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
@@ -7,7 +11,7 @@ $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>dev
 endif
 
 TOPDIR ?= $(CURDIR)
-include C:\workspace\forwarders\devkitPro_1.0\devkitARM\3ds_rules
+include $(DEVKITARM)/3ds_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -64,7 +68,7 @@ LIBS	:= -lcitro3d -lctru -lm
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= C:\workspace\forwarders\devkitPro_1.0\ctrulib\
+LIBDIRS	:= $(DEVKITPRO)/ctrulib
 
 
 #---------------------------------------------------------------------------------
@@ -193,7 +197,7 @@ all: $(BUILD) cia
 
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@C:\devkitPro\msys\bin\make.exe --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 cia: $(BUILD)
