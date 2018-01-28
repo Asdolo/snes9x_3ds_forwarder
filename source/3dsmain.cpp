@@ -1029,7 +1029,19 @@ void emulatorLoadRom()
     settingsSave(false);
 
     char romFileNameFullPath[_MAX_PATH];
-    snprintf(romFileNameFullPath, _MAX_PATH, "romfs:/rom.bin");
+
+    FILE* path_fp = fopen("romfs:/rom_path.txt", "r");
+    if (!path_fp)
+    {
+        exit(0);
+    }
+    else
+    {
+        fgets(romFileNameFullPath, sizeof(romFileNameFullPath), path_fp);
+    }
+
+    fclose(path_fp);
+
     impl3dsLoadROM(romFileNameFullPath);
 
     GPU3DS.emulatorState = EMUSTATE_EMULATE;
