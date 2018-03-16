@@ -1,6 +1,6 @@
 DEVKITPRO := /c/workspace/forwarders/bubble2k16_forwarders/devkitPro
 DEVKITARM := $(DEVKITPRO)/devkitARM_r45
-CTRULIB := $(DEVKITPRO)/ctrulib
+CTRULIB := $(CURDIR)/ctrulib_fork
 
 #---------------------------------------------------------------------------------
 .SUFFIXES:
@@ -68,7 +68,7 @@ LIBS	:= -lcitro3d -lctru -lm
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(DEVKITPRO)/ctrulib
+LIBDIRS	:= $(CTRULIB)
 
 
 #---------------------------------------------------------------------------------

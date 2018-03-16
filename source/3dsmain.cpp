@@ -59,7 +59,6 @@ int framesSkippedCount = 0;
 char romFileName[_MAX_PATH];
 char romFileNameLastSelected[_MAX_PATH];
 
-u8* bottom_screen_buffer;
 off_t bottom_screen_buffer_size;
 
 void LoadDefaultSettings() {
@@ -119,40 +118,6 @@ void clearTopScreenWithLogo()
 
 void renderBottomScreenImage()
 {
-    /*
-    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGBA8_OES);
-    gfxSetDoubleBuffering(GFX_BOTTOM, false);
-    gfxSwapBuffersGpu();
-
-    unsigned char* image;
-    unsigned width, height;
-
-    int error = lodepng_decode32_file(&image, &width, &height, "romfs:/bottom.png");
-
-    if (!error && width == 320 && height == 240)
-    {
-        // lodepng outputs big endian rgba so we need to convert
-        for (int i = 0; i < 2; i++)
-        {
-            u8* src = image;
-            uint32* fb = (uint32 *) gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL);
-            for (int y = 0; y < 240; y++)
-                for (int x = 0; x < 320; x++)
-                {
-                    uint32 r = *src++;
-                    uint32 g = *src++;
-                    uint32 b = *src++;
-                    uint32 a = *src++;
-
-                    uint32 c = ((r << 24) | (g << 16) | (b << 8) | 0xff);
-                    fb[x * 240 + (239 - y)] = c;
-                }
-            gfxSwapBuffers();
-        }
-
-        free(image);
-    }
-    */
     FILE *file = fopen("romfs:/bottom.bin", "rb");
 
     if (file)
@@ -167,6 +132,9 @@ void renderBottomScreenImage()
         bottom_screen_buffer_size = ftell(file);
         // seek back to start
         fseek(file, 0, SEEK_SET);
+
+        if (bottom_screen_buffer != NULL) free(bottom_screen_buffer);
+
         //allocate a buffer
         bottom_screen_buffer = (u8*)(malloc(bottom_screen_buffer_size));
         //read contents !
@@ -184,7 +152,7 @@ void renderBottomScreenImage()
     }
     else
     {  
-        GSPLCD_PowerOffBacklight(2);
+        turn_bottom_screen(TURN_OFF);    
     }
 }
 
@@ -931,7 +899,7 @@ bool settingsReadWriteFullListGlobal(bool writeMode)
 //----------------------------------------------------------------------
 bool settingsSave(bool includeGameSettings = true)
 {
-    consoleClear();
+    //consoleClear();
     
     //ui3dsDrawRect(50, 140, 270, 154, 0x000000);
     //ui3dsDrawStringWithNoWrapping(50, 140, 270, 154, 0x3f7fff, HALIGN_CENTER, "Saving settings to SD card...");
@@ -1046,7 +1014,7 @@ void emulatorLoadRom()
 
     GPU3DS.emulatorState = EMUSTATE_EMULATE;
 
-    consoleClear();
+    //consoleClear();
     settingsLoad();
     settingsUpdateAllSettings();
 
@@ -1232,6 +1200,13 @@ void setupPauseMenu(std::vector<SMenuTab>& menuTab, std::vector<DirectoryEntry>&
 
 void menuPause()
 {
+    // Let's turn on the bottom screen just in case it's turned off
+    turn_bottom_screen(TURN_ON);   
+
+    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
+    gfxSwapBuffersGpu();
+    menu3dsDrawBlackScreen();
+    
     int currentMenuTab = 0;
     bool closeMenu = false;
     std::vector<SMenuTab> menuTab;
@@ -1306,7 +1281,8 @@ void menuPause()
 
     if (closeMenu) {
         GPU3DS.emulatorState = EMUSTATE_EMULATE;
-        consoleClear();
+        //consoleClear();
+        renderBottomScreenImage();
     }
 
     // Loads the new ROM if a ROM was selected.
@@ -1321,7 +1297,7 @@ void menuPause()
 //-------------------------------------------------------
 char *noCheatsText[] {
     "",
-    "    No cheats available for this game ",
+    "    No cheats available for this game. ",
     "",
     "    To enable cheats:  ",
     "      Copy your .CHT/.CHX file to the path: "
@@ -1473,11 +1449,12 @@ void emulatorFinalize()
     printf("aptExit:\n");
 #endif
 	aptExit();
-    
+    /*
 #ifndef RELEASE
     printf("srvExit:\n");
 #endif
 	srvExit();
+    */
 }
 
 
@@ -1571,7 +1548,7 @@ void emulatorLoop()
     bool skipDrawingFrame = false;
 
     // Reinitialize the console.
-    renderBottomScreenImage();
+    //renderBottomScreenImage();
     //consoleInit(GFX_BOTTOM, NULL);
     gfxSetDoubleBuffering(GFX_BOTTOM, false);
     //menu3dsDrawBlackScreen();
@@ -1595,7 +1572,7 @@ void emulatorLoop()
             break;
 
         gpu3dsStartNewFrame();
-        gpu3dsCheckSlider();
+        //gpu3dsCheckSlider();
         updateFrameCount();
 
     	input3dsScanInputForEmulation();
@@ -1621,7 +1598,6 @@ void emulatorLoop()
             snesFrameTotalAccurateTicks += settings3DS.TicksPerFrame;  // time supposed to be spent rendering past x frames.
 
             int isSlow = 0;
-
 
             long skew = snesFrameTotalAccurateTicks - snesFrameTotalActualTicks;
 
@@ -1701,10 +1677,11 @@ int main()
     mkdir(s, 0777);
 
     //clearTopScreenWithLogo();
-    renderBottomScreenImage();
 
     //menuSelectFile();
     emulatorLoadRom();
+
+    renderBottomScreenImage();
 
     while (true)
     {

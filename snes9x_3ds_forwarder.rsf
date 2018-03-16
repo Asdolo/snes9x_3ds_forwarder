@@ -166,6 +166,7 @@ AccessControlInfo:
   - frd:u
   - fs:USER
   - gsp::Gpu
+  - gsp::Lcd
   - hid:USER
   - http:C
   - mic:u

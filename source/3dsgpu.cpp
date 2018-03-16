@@ -94,6 +94,8 @@ u32 vertexListBufferOffsets[1] = { 0 };
 u64 vertexListAttribPermutations[1] = { 0x3210 };
 u8 vertexListNumberOfAttribs[1] = { 2 };
 
+u8* bottom_screen_buffer;
+
 inline void gpu3dsSetAttributeBuffers(
     u8 totalAttributes,
     u32 *listAddress, u64 attributeFormats)
@@ -170,7 +172,7 @@ void gpu3dsCheckSlider()
         }
         else if (sliderVal < 0.3)
         {
-            u8 isNew3DS = 0;
+            bool isNew3DS = 0;
             APT_CheckNew3DS(&isNew3DS);
             if (!isNew3DS)
             {

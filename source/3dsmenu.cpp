@@ -441,10 +441,6 @@ void menu3dsDrawDialog(SMenuTab& dialogTab)
 
 void menu3dsDrawEverything(SMenuTab& dialogTab, bool& isDialog, int& currentMenuTab, std::vector<SMenuTab>& menuTab, int menuFrame = 0, int menuItemsFrame = 0, int dialogFrame = 0)
 {
-    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
-    gfxSetDoubleBuffering(GFX_BOTTOM, false);
-    gfxSwapBuffersGpu();
-    menu3dsDrawBlackScreen();
 
     if (!isDialog)
     {
