@@ -643,6 +643,8 @@ bool settingsUpdateAllSettings(bool updateGameSettings = true)
 {
     bool settingsChanged = false;
 
+// StretchWidth and StretchHeight are now set directly in the cfg, for custom screen size.
+/*
     // update screen stretch
     //
     if (settings3DS.ScreenStretch == 0)
@@ -694,6 +696,7 @@ bool settingsUpdateAllSettings(bool updateGameSettings = true)
         settings3DS.StretchHeight = 240;
         settings3DS.CropPixels = 0;
     }
+*/
 
     // Update the screen font
     //
@@ -853,6 +856,9 @@ bool settingsReadWriteFullListGlobal(bool writeMode)
     config3dsReadWriteInt32("# Do not modify this file or risk losing your settings.\n", NULL, 0, 0);
 
     config3dsReadWriteInt32("ScreenStretch=%d\n", &settings3DS.ScreenStretch, 0, 7);
+    config3dsReadWriteInt32("StretchWidth=%d\n", &settings3DS.StretchWidth, 0, 400);
+    config3dsReadWriteInt32("StretchHeight=%d\n", &settings3DS.StretchHeight, -1, 240);
+    config3dsReadWriteInt32("CropPixels=%d\n", &settings3DS.CropPixels, 0, 120);
     config3dsReadWriteInt32("HideUnnecessaryBottomScrText=%d\n", &settings3DS.HideUnnecessaryBottomScrText, 0, 1);
     config3dsReadWriteInt32("Font=%d\n", &settings3DS.Font, 0, 2);
 
