@@ -1709,6 +1709,8 @@ quit:
     if (GPU3DS.emulatorState > 0 && settings3DS.AutoSavestate)
         impl3dsSaveStateAuto();
 
+    turn_bottom_screen(TURN_ON);
+
     printf("emulatorFinalize:\n");
     emulatorFinalize();
     printf ("Exiting...\n");
