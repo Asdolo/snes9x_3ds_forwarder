@@ -58,8 +58,9 @@ typedef struct
 
     EmulatedFramerate ForceFrameRate = EmulatedFramerate::UseRomRegion;
 
-    int     StretchWidth, StretchHeight;
-    int     CropPixels;
+    int     StretchWidth = 400;
+    int     StretchHeight = 240;
+    int     CropPixels = 0;                 // crop pixels from each side by specified number
 
     int     Turbo[8] = {0, 0, 0, 0, 0, 0, 0, 0};  // Turbo buttons: 0 - No turbo, 1 - Release/Press every alt frame.
                                             // Indexes: 0 - A, 1 - B, 2 - X, 3 - Y, 4 - L, 5 - R
